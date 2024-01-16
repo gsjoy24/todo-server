@@ -43,6 +43,54 @@ async function run() {
 			res.send(result);
 		});
 
+		// get todos
+		app.get('/todos', async (req, res) => {
+			const todos = await todoCollection.find().toArray();
+			res.send(todos);
+		});
+
+		// get single todo
+		app.get('/todos/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const result = await todoCollection.findOne(query);
+			res.send(result);
+		});
+
+		// update todo
+		app.put('/todos/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const update = { $set: req.body };
+			const options = { returnOriginal: false };
+			const result = await todoCollection.findOneAndUpdate(query, update, options);
+			res.send(result.value);
+		});
+
+		// delete todo
+		app.delete('/todos/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const result = await todoCollection.deleteOne(query);
+			res.send(result);
+		});
+
+		// toggle completed
+		app.patch('/todos/:id', async (req, res) => {
+			const id = req.params.id;
+			const query = { _id: new ObjectId(id) };
+			const update = { $set: { completed: true } };
+
+			const currentTodo = await todoCollection.findOne(query);
+
+			// Toggle the value of the completed field directly in the $set object
+			update.$set.completed = currentTodo.completed ? !currentTodo.completed : true;
+
+			const result = await todoCollection.findOneAndUpdate(query, update);
+
+			res.send(result);
+		});
+
 		// Send a ping to confirm a successful connection
 		await client.db('admin').command({ ping: 1 });
 		console.log('Pinged your deployment. You successfully connected to MongoDB!');
