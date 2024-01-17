@@ -45,7 +45,11 @@ async function run() {
 
 		// get todos
 		app.get('/todos', async (req, res) => {
-			const todos = await todoCollection.find().toArray();
+			const query = {};
+			if (req.query.priority) {
+				query.priority = req.query.priority;
+			}
+			const todos = await todoCollection.find(query).toArray();
 			res.send(todos);
 		});
 
